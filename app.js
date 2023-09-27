@@ -30,27 +30,45 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/consulta', (req, res) => {
+  res.sendFile(__dirname + '/public/consulta.html');
+});
+
+app.get('/consultarDados', (req, res) => {
+  try {
+    // Leia o conteúdo do arquivo Data.json
+    const rawData = fs.readFileSync('./Data.json');
+    const data = JSON.parse(rawData);
+
+    // Envie os dados como resposta
+    res.json(data);
+  } catch (error) {
+    console.error('Erro ao ler o arquivo Data.json:', error);
+    res.status(500).send('Erro ao ler os dados.');
+  }
+});
+
 
 app.post('/setdominio', upload.none(), async (req, res) => {
-    const { dominio, client, url_bot } = req.body;
+  const { dominio, client, url_bot, pageName } = req.body;
 
-    // Gerar o nome da pasta aleatória
-    const randomFolderName = generateRandomFolderName();
-    const folderPath = `/root/myapp/Set-Dominios/public/Pages/${randomFolderName}`;
-  
-    // Criar a pasta se não existir
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath);
-    }
-  
-    // Criar o arquivo index.html com o conteúdo "Olá Mundo"
-    const indexPath = `${folderPath}/index.html`;
-    const indexContent = `<!DOCTYPE html>
+  // Gerar o nome da pasta aleatória
+  const randomFolderName = generateRandomFolderName();
+  const folderPath = `/root/myapp/Set-Dominios/public/Pages/${randomFolderName}`;
+
+  // Criar a pasta se não existir
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath);
+  }
+
+  // Criar o arquivo index.html com o conteúdo "Olá Mundo"
+  const indexPath = `${folderPath}/index.html`;
+  const indexContent = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exemplo de Iframe</title>
+    <title>${pageName}</title>
     <style>
         body, html {
             margin: 0;
@@ -71,10 +89,10 @@ app.post('/setdominio', upload.none(), async (req, res) => {
     <iframe src="${url_bot}"></iframe>
 </body>
 </html>`;
-    
-    fs.writeFileSync(indexPath, indexContent);
 
-      // Configurar o proxy reverso com o diretório gerado como raiz do domínio
+  fs.writeFileSync(indexPath, indexContent);
+
+  // Configurar o proxy reverso com o diretório gerado como raiz do domínio
   const proxyConfig = `
   server {
     server_name ${dominio};
@@ -93,15 +111,15 @@ app.post('/setdominio', upload.none(), async (req, res) => {
   }
     `;
 
-   
+
   // Salvar o arquivo na pasta ./Proxys
   const filePath = `/etc/nginx/sites-available/${dominio}.conf`;
 
   try {
     fs.writeFileSync(filePath, proxyConfig);
-  
+
     const symlinkCommand = `sudo ln -s ${filePath} /etc/nginx/sites-enabled/${dominio}.conf`;
-  
+
     // Verificar a sintaxe do arquivo de configuração do Nginx antes de prosseguir
     const nginxSyntaxCheckCommand = 'sudo nginx -t';
     exec(nginxSyntaxCheckCommand, (nginxError, nginxStdout, nginxStderr) => {
@@ -131,30 +149,31 @@ app.post('/setdominio', upload.none(), async (req, res) => {
           } else {
             console.log(`Link simbólico criado com sucesso: ${stdout}`);
           }
-  
+
           // Gerar o certificado SSL usando o Certbot
           const certbotCommand = `sudo certbot --nginx --email dagestaoemail@gmail.com --redirect --agree-tos -d ${dominio} --non-interactive`;
-  
+
           exec(certbotCommand, (certbotError, certbotStdout, certbotStderr) => {
             if (certbotError) {
               console.error(`Erro ao gerar o certificado SSL: ${certbotError}`);
               res.status(500).send('Erro ao gerar o certificado SSL.');
             } else {
               console.log(`Certificado SSL gerado com sucesso: ${certbotStdout}`);
-  
-              const data = { dominio, client, url_bot, randomFolderName };
+
+              const status = "Ativado"
+              const data = { dominio, client, url_bot, randomFolderName, pageName, status };
               const databasePath = './Data.json';
               let database = [];
-  
+
               if (fs.existsSync(databasePath)) {
                 const rawData = fs.readFileSync(databasePath);
                 database = JSON.parse(rawData);
               }
-  
+
               database.push(data);
-  
+
               fs.writeFileSync(databasePath, JSON.stringify(database));
-  
+
               res.send('Proxy reverso criado, link simbólico criado e certificado SSL gerado com sucesso.');
             }
           });
@@ -167,6 +186,213 @@ app.post('/setdominio', upload.none(), async (req, res) => {
   }
 
 });
+
+
+app.post('/disable/:id', (req, res) => {
+  const { id } = req.params;
+
+  // Verifique se a página com o ID especificado existe
+  const folderPath = `/root/myapp/Set-Dominios/public/Pages/${id}`;
+  if (fs.existsSync(folderPath)) {
+    // Crie um arquivo HTML temporário com a mensagem de página desativada
+    const indexPath = `${folderPath}/index.html`;
+    const indexContent = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página Temporariamente Desativada</title>
+</head>
+<body>
+  <h1>Esta página está temporariamente desativada</h1>
+</body>
+</html>`;
+
+    fs.writeFileSync(indexPath, indexContent);
+
+    // Defina o status como "Desativado" no arquivo Data.json
+    const databasePath = './Data.json';
+    if (fs.existsSync(databasePath)) {
+      const rawData = fs.readFileSync(databasePath);
+      let database = JSON.parse(rawData);
+
+      const pageData = database.find(item => item.randomFolderName === id);
+      if (pageData) {
+        pageData.status = "Desativado";
+        fs.writeFileSync(databasePath, JSON.stringify(database));
+
+        res.send(`Página com ID ${id} foi desativada com sucesso.`);
+        return;
+      }
+    }
+
+    res.status(500).send('Erro ao atualizar o status da página.');
+  } else {
+    res.status(404).send('Página não encontrada.');
+  }
+});
+
+app.post('/enable/:id', (req, res) => {
+  const { id } = req.params;
+  const { url_bot, pageName } = req.body;
+
+  // Verifique se a página com o ID especificado existe
+  const folderPath = `/root/myapp/Set-Dominios/public/Pages/${id}`;
+  if (fs.existsSync(folderPath)) {
+    // Crie o conteúdo HTML com base no modelo fornecido
+    const htmlContent = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${pageName}</title>
+  <style>
+      body, html {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+      }
+
+      iframe {
+          border: none;
+          width: 100%;
+          height: 100%;
+      }
+  </style>
+</head>
+<body>
+  <iframe src="${url_bot}"></iframe>
+</body>
+</html>`;
+
+    // Salve o conteúdo HTML no arquivo index.html
+    const indexPath = `${folderPath}/index.html`;
+    fs.writeFileSync(indexPath, htmlContent);
+
+    // Defina o status como "Ativado" no arquivo Data.json
+    const databasePath = './Data.json';
+    if (fs.existsSync(databasePath)) {
+      const rawData = fs.readFileSync(databasePath);
+      let database = JSON.parse(rawData);
+
+      const pageData = database.find(item => item.randomFolderName === id);
+      if (pageData) {
+        pageData.status = "Ativado";
+        fs.writeFileSync(databasePath, JSON.stringify(database));
+
+        res.send(`Página com ID ${id} foi ativada com sucesso.`);
+        return;
+      }
+    }
+
+    res.status(500).send('Erro ao atualizar o status da página.');
+  } else {
+    res.status(404).send('Página não encontrada.');
+  }
+});
+
+
+app.post('/delete/:id', (req, res) => {
+  const { id } = req.params;
+
+  // Encontre o domínio associado a este ID no arquivo Data.json
+  const databasePath = './Data.json';
+  if (fs.existsSync(databasePath)) {
+    const rawData = fs.readFileSync(databasePath);
+    let database = JSON.parse(rawData);
+
+    const pageDataIndex = database.findIndex(item => item.randomFolderName === id);
+    if (pageDataIndex !== -1) {
+      const { dominio } = database[pageDataIndex];
+
+      // Remova a pasta com base no ID usando rm -r
+      const folderPath = `/root/myapp/Set-Dominios/public/Pages/${id}`;
+      exec(`rm -r ${folderPath}`, (rmError, rmStdout, rmStderr) => {
+        if (rmError) {
+          console.error(`Erro ao excluir a pasta com ID ${id}: ${rmError}`);
+          res.status(500).send(`Erro ao excluir a pasta com ID ${id}.`);
+        } else {
+          console.log(`Pasta com ID ${id} excluída com sucesso.`);
+
+          // Remova o arquivo de configuração do Nginx com base no domínio
+          const nginxConfigPath = `/etc/nginx/sites-available/${dominio}.conf`;
+          const nginxEnabledPath = `/etc/nginx/sites-enabled/${dominio}.conf`;
+          exec(`rm ${nginxConfigPath}`, (nginxConfigError, nginxConfigStdout, nginxConfigStderr) => {
+            if (nginxConfigError) {
+              console.error(`Erro ao excluir o arquivo de configuração do Nginx: ${nginxConfigError}`);
+            } else {
+              console.log(`Arquivo de configuração do Nginx com domínio ${dominio} excluído com sucesso.`);
+            }
+
+            // Remova o arquivo de configuração habilitado
+            exec(`rm ${nginxEnabledPath}`, (nginxEnabledError, nginxEnabledStdout, nginxEnabledStderr) => {
+              if (nginxEnabledError) {
+                console.error(`Erro ao excluir o arquivo de configuração habilitado do Nginx: ${nginxEnabledError}`);
+              } else {
+                console.log(`Arquivo de configuração habilitado do Nginx com domínio ${dominio} excluído com sucesso.`);
+              }
+
+              // Remova o registro do Data.json com base no ID
+              database.splice(pageDataIndex, 1);
+              fs.writeFileSync(databasePath, JSON.stringify(database));
+
+              // Reinicie o Nginx
+              exec('sudo service nginx restart', (nginxError, nginxStdout, nginxStderr) => {
+                if (nginxError) {
+                  console.error(`Erro ao reiniciar o Nginx: ${nginxError}`);
+                  res.status(500).send('Erro ao reiniciar o Nginx.');
+                } else {
+                  console.log('Nginx reiniciado com sucesso.');
+                  res.send(`Página com ID ${id} e domínio ${dominio} foi excluída com sucesso.`);
+                }
+              });
+            });
+          });
+        }
+      });
+    } else {
+      res.status(404).send('ID não encontrado no arquivo Data.json.');
+    }
+  } else {
+    res.status(500).send('Erro ao ler o arquivo Data.json.');
+  }
+});
+
+app.post('/login', async (req, res) => {
+  const { Name, Pass } = req.body;
+
+  try {
+    const response = await axios.post('http://localhost:31313/user', {
+      Name,
+      Pass
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const responseData = response.data;
+
+    // Verifique se o StatusClient é "Ativo"
+    if (responseData.StatusClient === 'Ativo') {
+      // Se for "Ativo", você pode prosseguir com a lógica de login
+      res.json({
+        Mensagem: 'Usuário autenticado com sucesso',
+        token: responseData.token,
+        StatusClient: 'Ativo'
+      });
+    } else {
+      // Caso contrário, retorne uma mensagem de erro
+      res.status(401).json({ Mensagem: 'Erro ao logar: Status do cliente não é Ativo' });
+    }
+  } catch (error) {
+    console.error('Erro ao fazer a requisição para /login:', error.response.data );
+    res.status(500).json({ Mensagem: 'Erro ao logar' });
+  }
+});
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
