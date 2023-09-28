@@ -188,3 +188,99 @@ nav a {
 nav a:hover {
     color: #2980b9;
 }
+
+
+/* Estilização do balão flutuante de edição */
+#edit-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+}
+
+#edit-dialog {
+    background-color: #fff;
+    width: 400px;
+    padding: 20px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+#edit-dialog h2 {
+    margin-top: 0;
+}
+
+#edit-form {
+    display: flex;
+    flex-direction: column;
+}
+
+#edit-form label {
+    margin-bottom: 10px;
+}
+
+#edit-form input[type="text"] {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+#edit-form button {
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+#edit-form button[type="button"] {
+    background-color: #ccc;
+    margin-right: 10px;
+}
+
+/* Estilizando os botões na tabela */
+#dellbuton {
+    background-color: red;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+}
+
+
+#delete-confirmation {
+    display: none; /* Começa oculto */
+    position: fixed; /* Fixa o diálogo na tela */
+    top: 50%; /* Centraliza verticalmente */
+    left: 50%; /* Centraliza horizontalmente */
+    transform: translate(-50%, -50%); /* Centraliza o diálogo */
+    background-color: #fff; /* Cor de fundo */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Sombra */
+    padding: 20px; /* Espaçamento interno */
+    text-align: center; /* Centraliza o conteúdo */
+    z-index: 1000; /* Z-index alto para exibir acima de outros elementos */
+}
+
+#delete-confirmation h2 {
+    margin-top: 0; /* Remova a margem superior do título */
+}
+
+#delete-confirmation p {
+    margin-bottom: 20px; /* Adicione espaço após o parágrafo */
+}
+
+#delete-confirmation button {
+    padding: 10px 20px; /* Espaçamento interno dos botões */
+    margin: 0 10px; /* Margem entre os botões */
+    cursor: pointer; /* Use um cursor de mão ao passar o mouse sobre os botões */
+}

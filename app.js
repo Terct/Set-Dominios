@@ -192,21 +192,68 @@ app.post('/disable/:id', (req, res) => {
   const { id } = req.params;
 
   // Verifique se a página com o ID especificado existe
-  const folderPath = `/root/myapp/Set-Dominios/public/Pages/${id}`;
+  const folderPath = `./public/Pages/${id}`;
   if (fs.existsSync(folderPath)) {
     // Crie um arquivo HTML temporário com a mensagem de página desativada
     const indexPath = `${folderPath}/index.html`;
     const indexContent = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Página Temporariamente Desativada</title>
-</head>
-<body>
-  <h1>Esta página está temporariamente desativada</h1>
-</body>
-</html>`;
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Página Temporariamente Desativada</title>
+      <style>
+        /* Estilo para o corpo da página */
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f1f1f1;
+          text-align: center;
+        }
+    
+        /* Estilo para o contêiner principal */
+        .container {
+          background-color: #ffffff;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+          margin: 100px auto;
+          max-width: 600px;
+        }
+    
+        /* Estilo para o cabeçalho */
+        h1 {
+          color: #333;
+        }
+    
+        /* Estilo para o texto adicional */
+        h3 {
+          color: #666;
+        }
+    
+        /* Estilo para a imagem do robô desativado */
+        img {
+          max-width: 100%;
+          height: auto;
+        }
+    
+        /* Estilo para dispositivos de tela pequena */
+        @media (max-width: 768px) {
+          .container {
+            max-width: 90%;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <img src="https://static.vecteezy.com/system/resources/thumbnails/008/568/882/small/website-page-not-found-error-404-robot-character-broken-chatbot-mascot-disabled-site-on-technical-work-web-design-template-cartoon-online-bot-crash-accident-robotic-assistance-failure-eps-vector.jpg" alt="Robô Desativado">
+        <h1>Esta página está temporariamente desativada</h1>
+        <h3>Entre em contato com a administração</h3>
+      </div>
+    </body>
+    </html>
+    
+    `;
 
     fs.writeFileSync(indexPath, indexContent);
 
@@ -237,7 +284,7 @@ app.post('/enable/:id', (req, res) => {
   const { url_bot, pageName } = req.body;
 
   // Verifique se a página com o ID especificado existe
-  const folderPath = `/root/myapp/Set-Dominios/public/Pages/${id}`;
+  const folderPath = `./public/Pages/${id}`;
   if (fs.existsSync(folderPath)) {
     // Crie o conteúdo HTML com base no modelo fornecido
     const htmlContent = `<!DOCTYPE html>
@@ -359,6 +406,77 @@ app.post('/delete/:id', (req, res) => {
     res.status(500).send('Erro ao ler o arquivo Data.json.');
   }
 });
+
+
+
+app.post('/edit/:id', (req, res) => {
+  const { id } = req.params;
+  const { url_bot, cliente, pageName } = req.body;
+
+  // Verifique se a página com o ID especificado existe
+  const folderPath = `./public/Pages/${id}`;
+  if (fs.existsSync(folderPath)) {
+    // Crie o conteúdo HTML com base no modelo fornecido
+    const htmlContent = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${pageName}</title>
+  <style>
+      body, html {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+      }
+
+      iframe {
+          border: none;
+          width: 100%;
+          height: 100%;
+      }
+  </style>
+</head>
+<body>
+  <iframe src="${url_bot}"></iframe>
+</body>
+</html>`;
+
+    // Salve o conteúdo HTML no arquivo index.html
+    const indexPath = `${folderPath}/index.html`;
+    fs.writeFileSync(indexPath, htmlContent);
+
+    // Atualize o cliente e o status no arquivo Data.json
+    const databasePath = './Data.json';
+    if (fs.existsSync(databasePath)) {
+      const rawData = fs.readFileSync(databasePath);
+      let database = JSON.parse(rawData);
+
+      const pageData = database.find(item => item.randomFolderName === id);
+      if (pageData) {
+        pageData.status = "Ativado";
+        pageData.url_bot = url_bot; // Atualiza a URL do bot
+        pageData.client = cliente; // Atualiza o cliente
+        pageData.pageName = pageName; // Atualiza o nome da página
+
+        fs.writeFileSync(databasePath, JSON.stringify(database));
+
+        res.status(200).send('Página Editada com Sucesso');
+        return;
+      }
+    }
+
+    res.status(500).send('Erro ao atualizar a página.');
+    console.log("Erro Au atulizar")
+  } else {
+    res.status(404).send('Página não encontrada.');
+  }
+});
+
+
+
 
 app.post('/login', async (req, res) => {
   const { Name, Pass } = req.body;
