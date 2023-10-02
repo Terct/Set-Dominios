@@ -9,7 +9,6 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const crypto = require('crypto')
 
-
 // Carregue as variáveis de ambiente do arquivo .env
 dotenv.config();
 
