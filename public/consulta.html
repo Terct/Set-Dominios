@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Consulta de Dados</title>
+    <link rel="stylesheet" type="text/css" href="stylesConsulta.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/consulta">Gerenciador</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <h1>Gerenciador</h1>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Domínio</th>
+                    <th>Cliente</th>
+                    <th>URL do Bot</th>
+                    <th>Nome da Página</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="data-table-body">
+                <!-- Os dados da tabela serão preenchidos aqui -->
+            </tbody>
+        </table>
+    </div>
+
+    <div id="overlay"></div>
+    <div id="login-dialog">
+        <h2>Login</h2>
+        <form id="login-form">
+            <label for="username">Usuário:</label>
+            <input type="text" id="username" name="username"><br><br>
+
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password"><br><br>
+
+            <input type="submit" value="Login">
+        </form>
+    </div>
+
+    <div id="edit-overlay" style="display: none;">
+        <div id="edit-dialog">
+            <h2>Editar Registro</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id" name="id" value="">
+                <label for="edit-url-bot">URL do Bot:</label>
+                <input type="text" id="edit-url-bot" name="url_bot"><br><br>
+
+                <label for="edit-cliente">Cliente:</label>
+                <input type="text" id="edit-cliente" name="cliente"><br><br>
+
+                <label for="edit-nome-pagina">Nome da Página:</label>
+                <input type="text" id="edit-nome-pagina" name="nome_pagina"><br><br>
+
+                <button type="button" onclick="salvarEdicao()">Salvar</button>
+                <button type="button" onclick="cancelarEdicao()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+
+
+    <script>
+
+        $(document).ready(function () {
+            // Verifique se há um token na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get("token");
+
+            if (!token) {
+                // Se não houver token na URL, exiba o diálogo de login
+                $("#overlay").show();
+                $("#login-dialog").show();
+
+                // Impedir que o usuário feche o modal facilmente
+                $("#overlay").click(function () {
+                    // Não faz nada quando o overlay é clicado
+                });
+
+                // Manipule o envio do formulário de login
+                $("#login-form").submit(function (event) {
+                    event.preventDefault();
+                    const username = $("#username").val();
+                    const password = $("#password").val();
+
+                    // Faça a requisição AJAX para a rota local /login
+                    $.ajax({
+                        url: "/login", // Use a rota local
+                        method: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            "Name": username,
+                            "Pass": password
+                        }),
+                        success: function (response) {
+                            if (response.StatusClient === "Ativo") {
+                                // Se o StatusClient for "Ativo", redirecione com o token
+                                window.location.href = `?token=${response.token}`;
+                            } else {
+                                alert("Erro ao logar: Status do cliente não é Ativo");
+                            }
+                        },
+                        error: function () {
+                            alert("Erro ao logar");
+                        }
+                    });
+                });
+            }
+        });
+
+        async function carregarDados() {
+            try {
+                const response = await fetch('/consultarDados');
+                const data = await response.json();
+
+                if (response.ok) {
+                    const tableBody = document.getElementById('data-table-body');
+                    tableBody.innerHTML = '';
+
+                    data.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.randomFolderName}</td>
+                            <td>${item.dominio}</td>
+                            <td>${item.client}</td>
+                            <td>${item.url_bot}</td>
+                            <td>${item.pageName}</td>
+                            <td>${item.status}</td>
+                            <td>
+                                <button onclick="desativarRegistro(this)" class="${item.status === 'Ativado' ? '' : 'hidden'}">Desativar</button>
+                                <button onclick="ativarRegistro(this)" class="${item.status === 'Desativado' ? '' : 'hidden'}" data-id="${item.randomFolderName}" data-url="${item.url_bot}" data-page="${item.pageName}">Ativar</button>
+                                <button onclick="editarRegistro(this)">Editar</button>
+                                <button id="dellbuton" onclick="confirmarDelecao('${item.randomFolderName}', '${item.dominio}')">Deletar</button>
+
+
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    console.error('Erro ao carregar os dados.');
+                }
+            } catch (error) {
+                console.error('Erro ao realizar a requisição AJAX:', error);
+            }
+        }
+
+        function desativarRegistro(button) {
+            const row = button.closest('tr');
+            const id = row.querySelector('td:first-child').textContent;
+
+            fetch(`/disable/${id}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        // Atualize o status na tabela ou realize outra ação de feedback
+                        console.log(`Registro com ID ${id} desativado com sucesso.`);
+                        location.reload();
+                        // Oculte o botão "Desativar" e mostre o botão "Ativar"
+                        button.classList.add('hidden');
+                        row.querySelector('.hidden').classList.remove('hidden');
+                    } else {
+                        console.error(`Erro ao desativar o registro com ID ${id}.`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`Erro ao realizar a requisição AJAX: ${error}`);
+                });
+        }
+
+        function ativarRegistro(button) {
+            const id = button.getAttribute('data-id');
+            const url_bot = button.getAttribute('data-url');
+            const pageName = button.getAttribute('data-page');
+
+            fetch(`/enable/${id}`, {
+                method: 'POST',
+                body: JSON.stringify({ id, url_bot, pageName }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Atualize o status na tabela ou realize outra ação de feedback
+                        console.log(`Registro com ID ${id} ativado com sucesso.`);
+                        location.reload();
+                        // Oculte o botão "Ativar" e mostre o botão "Desativar"
+                        button.classList.add('hidden');
+                        button.closest('tr').querySelector('.hidden').classList.remove('hidden');
+                    } else {
+                        console.error(`Erro ao ativar o registro com ID ${id}.`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`Erro ao realizar a requisição AJAX: ${error}`);
+                });
+        }
+
+        function confirmarDelecao(id, dominio) {
+            const confirmacao = confirm(`Tem certeza de que deseja deletar o registro com ID ${id} e domínio ${dominio}?`);
+
+            if (confirmacao) {
+                deletarRegistro(id, dominio);
+            }
+        }
+
+
+
+        function deletarRegistro(id, dominio) {
+            // Aqui você pode colocar o código existente para deletar o registro
+            fetch(`/delete/${id}`, {
+                method: 'POST',
+                body: JSON.stringify({ id, dominio }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Remova a linha da tabela ou realize outra ação de feedback
+                        const row = document.querySelector(`tr td:first-child:contains('${id}')`);
+                        if (row) {
+                            row.closest('tr').remove();
+                        }
+                        console.log(`Registro com ID ${id} e domínio ${dominio} deletado com sucesso.`);
+                        
+                    } else {
+                        console.error(`Erro ao deletar o registro com ID ${id} e domínio ${dominio}.`);
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error(`Erro ao realizar a requisição AJAX: ${error}`);
+                    location.reload();
+                });
+        }
+        window.addEventListener('load', carregarDados);
+
+
+        // Adicione um evento de clique aos links do cabeçalho
+        $("ul li a").click(function (event) {
+            event.preventDefault();
+            const href = $(this).attr("href");
+
+            // Extraia os parâmetros da URL atual
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get("token");
+
+            // Redirecione o usuário para a outra página com os parâmetros
+            window.location.href = `${href}?token=${token}`;
+        });
+
+
+        function editarRegistro(button) {
+            const row = button.closest('tr');
+            const id = row.querySelector('td:first-child').textContent;
+            const url_bot = row.querySelector('td:nth-child(4)').textContent;
+            const cliente = row.querySelector('td:nth-child(3)').textContent;
+            const pageName = row.querySelector('td:nth-child(5)').textContent;
+
+            // Preencher o formulário de edição com os valores atuais
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-url-bot').value = url_bot;
+            document.getElementById('edit-cliente').value = cliente;
+            document.getElementById('edit-nome-pagina').value = pageName;
+
+            // Exibir o balão flutuante de edição
+            document.getElementById('edit-overlay').style.display = 'block';
+        }
+
+        function salvarEdicao() {
+            const id = document.getElementById('edit-id').value;
+            const url_bot = document.getElementById('edit-url-bot').value;
+            const cliente = document.getElementById('edit-cliente').value;
+            const pageName = document.getElementById('edit-nome-pagina').value;
+
+            // Fazer a requisição AJAX para a rota /edit:id com os dados editados
+            $.ajax({
+                url: `/edit/${id}`,
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    "url_bot": url_bot,
+                    "cliente": cliente,
+                    "pageName": pageName
+                }),
+                success: function (response) {
+                    if (response === 'Página Editada com Sucesso') {
+                        // Fechar o balão flutuante
+                        document.getElementById('edit-overlay').style.display = 'none';
+                        // Recarregar os dados
+                        carregarDados();
+                    } else {
+                        alert("Erro ao editar registro.");
+                    }
+                },
+                error: function () {
+                    alert("Erro ao editar registro.");
+                }
+            });
+        }
+
+        function cancelarEdicao() {
+            // Fechar o balão flutuante
+            document.getElementById('edit-overlay').style.display = 'none';
+        }
+
+
+    </script>
+</body>
+
+</html>

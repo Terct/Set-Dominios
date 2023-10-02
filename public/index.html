@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Gerenciador de Páginas</title>
+    <!-- Inclua o jQuery a partir do CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/consulta">Gerenciador</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div id="response-container"></div>
+
+    <h1>Criar Página</h1>
+    <form id="set-form">
+        <label for="dominio">Domínio:</label>
+        <input type="text" id="dominio" name="dominio" required><br><br>
+
+        <label for="client">Cliente:</label>
+        <input type="text" id="client" name="client" required><br><br>
+
+        <label for="url_bot">URL do Bot:</label>
+        <input type="text" id="url_bot" name="url_bot" required><br><br>
+
+        <label for="pageName">Titulo Da Página:</label>
+        <input type="text" id="pageName" name="pageName" required><br><br>
+
+        <input type="submit" value="Enviar" required>
+    </form>
+
+    <div id="overlay"></div>
+    <div id="login-dialog">
+        <h2>Login</h2>
+        <form id="login-form">
+            <label for="username">Usuário:</label>
+            <input type="text" id="username" name="username"><br><br>
+
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password"><br><br>
+
+            <input type="submit" value="Login">
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Verifique se há um token na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get("token");
+
+
+            if (!token) {
+                // Se não houver token na URL, exiba o diálogo de login
+                $("#overlay").show();
+                $("#login-dialog").show();
+
+                // Impedir que o usuário feche o modal facilmente
+                $("#overlay").click(function () {
+                    // Não faz nada quando o overlay é clicado
+                });
+
+                // Manipule o envio do formulário de login
+                $("#login-form").submit(function (event) {
+                    event.preventDefault();
+                    const username = $("#username").val();
+                    const password = $("#password").val();
+
+                    // Faça a requisição AJAX para a rota local /login
+                    $.ajax({
+                        url: "/login", // Use a rota local
+                        method: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            "Name": username,
+                            "Pass": password
+                        }),
+                        success: function (response) {
+                            if (response.StatusClient === "Ativo") {
+                                // Se o StatusClient for "Ativo", redirecione com o token
+                                window.location.href = `/?token=${response.token}`;
+                            } else {
+                                alert("Erro ao logar: Status do cliente não é Ativo");
+                            }
+                        },
+                        error: function () {
+                            alert("Erro ao logar");
+                        }
+                    });
+                });
+            }
+        });
+
+        // Adicione um evento de clique aos links do cabeçalho
+        $("ul li a").click(function (event) {
+            event.preventDefault();
+            const href = $(this).attr("href");
+
+            // Extraia os parâmetros da URL atual
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get("token");
+
+            // Redirecione o usuário para a outra página com os parâmetros
+            window.location.href = `${href}?token=${token}`;
+        });
+
+
+        $(document).ready(function () {
+            $("#set-form").submit(function (event) {
+                event.preventDefault(); // Evita o envio tradicional do formulário
+                mostrarCarregando();
+
+                // Obtenha os dados do formulário
+                const dominio = $("#dominio").val();
+                const client = $("#client").val();
+                const url_bot = $("#url_bot").val();
+                const pageName = $("#pageName").val();
+
+                // Verifique o domínio
+                if (dominio.startsWith("http://") || dominio.startsWith("https://") || dominio.includes("/")) {
+                    // O domínio começa com "http://" ou "https://" ou contém "/"
+                    alert("Erro: O domínio não deve começar com 'http://', 'https://' ou conter '/'");
+                    ocultarCarregando();
+                    return; // Aborta a requisição
+                }
+
+                // Se a verificação passar, faça a requisição AJAX para o servidor
+                const formData = {
+                    dominio: dominio,
+                    client: client,
+                    url_bot: url_bot,
+                    pageName: pageName
+                };
+
+                $.ajax({
+                    url: "/setdominio", // Substitua pela URL correta
+                    method: "POST",
+                    data: formData,
+                    success: function (response) {
+                        // Exiba a resposta no elemento de resposta
+                        const responseContainer = $("#response-container");
+                        responseContainer.html("<p>" + response + "</p>");
+
+                        // Adicione o botão "OK" à mensagem
+                        responseContainer.append('<button id="ok-button">OK</button>');
+
+                        // Exiba a mensagem e o botão "OK"
+                        responseContainer.fadeIn();
+                        ocultarCarregando();
+
+                        // Adicione um evento de clique para fechar a mensagem quando o botão "OK" for clicado
+                        $("#ok-button").click(function () {
+                            responseContainer.fadeOut();
+                        });
+                    },
+                    error: function () {
+                        alert("Erro ao fazer a requisição");
+                        ocultarCarregando();
+                    }
+                });
+            });
+        });
+
+        function mostrarCarregando() {
+            // Crie a camada de overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'loading-overlay';
+
+            // Crie a mensagem de carregamento
+            const mensagem = document.createElement('div');
+            mensagem.id = 'loading-message';
+            mensagem.textContent = 'Carregando...';
+
+            // Adicione a mensagem à camada de overlay
+            overlay.appendChild(mensagem);
+
+            // Adicione a camada de overlay à página
+            document.body.appendChild(overlay);
+        }
+
+        function ocultarCarregando() {
+            // Remova a camada de overlay
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }
+
+
+    </script>
+
+</body>
+
+</html>
