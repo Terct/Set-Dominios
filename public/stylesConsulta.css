@@ -150,14 +150,14 @@ nav a:hover {
 
 #edit-dialog h2 {
     margin-top: 0;
-    
+
 }
 
 #edit-form {
     display: flex;
     flex-direction: column;
-    
-    
+
+
 }
 
 #edit-form label {
@@ -187,7 +187,7 @@ nav a:hover {
     background-color: #FC7600;
     padding: 10px;
     margin-right: 20px;
-    margin: 10;
+    margin: 2%;
 }
 
 /* Estilizando os botões na tabela */
