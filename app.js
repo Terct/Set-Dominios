@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (event.data.type === "urlChange") {
       // Obtém a nova URL do evento
       var newURL = event.data.url;
-      
+
       // Redireciona a página principal para a nova URL
       window.location.href = newURL;
     }
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const proxyConfig = `
   server {
     server_name ${dominio};
-  
+
     location / {
       proxy_pass http://127.0.0.1:${port}/Pages/${randomFolderName}/;
       proxy_http_version 1.1;
@@ -228,7 +228,7 @@ app.post('/disable/:id', (req, res) => {
           background-color: #f1f1f1;
           text-align: center;
         }
-    
+
         /* Estilo para o contêiner principal */
         .container {
           background-color: #ffffff;
@@ -238,23 +238,23 @@ app.post('/disable/:id', (req, res) => {
           margin: 100px auto;
           max-width: 600px;
         }
-    
+
         /* Estilo para o cabeçalho */
         h1 {
           color: #333;
         }
-    
+
         /* Estilo para o texto adicional */
         h3 {
           color: #666;
         }
-    
+
         /* Estilo para a imagem do robô desativado */
         img {
           max-width: 100%;
           height: auto;
         }
-    
+
         /* Estilo para dispositivos de tela pequena */
         @media (max-width: 768px) {
           .container {
@@ -271,7 +271,7 @@ app.post('/disable/:id', (req, res) => {
       </div>
     </body>
     </html>
-    
+
     `;
 
     fs.writeFileSync(indexPath, indexContent);
@@ -320,7 +320,7 @@ app.post('/enable/:id', (req, res) => {
               height: 100%;
               overflow: hidden;
           }
-    
+
           iframe {
               border: none;
               width: 100%;
@@ -340,7 +340,7 @@ app.post('/enable/:id', (req, res) => {
       if (event.data.type === "urlChange") {
         // Obtém a nova URL do evento
         var newURL = event.data.url;
-        
+
         // Redireciona a página principal para a nova URL
         window.location.href = newURL;
       }
@@ -392,7 +392,7 @@ app.post('/delete/:id', (req, res) => {
       const { dominio } = database[pageDataIndex];
 
       // Remova a pasta com base no ID usando rm -r
-      const folderPath = `/root/myapp/Set-Dominios/public/Pages/${id}`;
+      const folderPath = `/root/myapps/Set-Dominios/public/Pages/${id}`;
       exec(`rm -r ${folderPath}`, (rmError, rmStdout, rmStderr) => {
         if (rmError) {
           console.error(`Erro ao excluir a pasta com ID ${id}: ${rmError}`);
@@ -468,7 +468,7 @@ app.post('/edit/:id', (req, res) => {
                 height: 100%;
                 overflow: hidden;
             }
-    
+
             iframe {
                 border: none;
                 width: 100%;
@@ -481,14 +481,14 @@ app.post('/edit/:id', (req, res) => {
     <script>
     document.addEventListener("DOMContentLoaded", function() {
       var iframe = document.getElementById("meuIframe");
-    
+
       // Adiciona um ouvinte de mensagem para ouvir as mensagens do iframe
       window.addEventListener("message", function(event) {
         // Verifica se a mensagem é do tipo "urlChange"
         if (event.data.type === "urlChange") {
           // Obtém a nova URL do evento
           var newURL = event.data.url;
-          
+
           // Redireciona a página principal para a nova URL
           window.location.href = newURL;
         }
