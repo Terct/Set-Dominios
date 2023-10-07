@@ -20,6 +20,7 @@ app.use(bodyParser.json());
 // Configuração do multer para lidar com o upload de arquivos
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+const port = 3999
 
 
 function generateRandomFolderName() {
@@ -55,7 +56,7 @@ app.post('/setdominio', upload.none(), async (req, res) => {
 
   // Gerar o nome da pasta aleatória
   const randomFolderName = generateRandomFolderName();
-  const folderPath = `/root/myapp/Set-Dominios/public/Pages/${randomFolderName}`;
+  const folderPath = `/root/myapps/Set-Dominios/public/Pages/${randomFolderName}`;
 
   // Criar a pasta se não existir
   if (!fs.existsSync(folderPath)) {
@@ -116,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function() {
     server_name ${dominio};
   
     location / {
-      proxy_pass http://127.0.0.1:3000/Pages/${randomFolderName}/;
+      proxy_pass http://127.0.0.1:${port}/Pages/${randomFolderName}/;
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection 'upgrade';
@@ -565,7 +566,7 @@ app.post('/login', async (req, res) => {
 });
 
 
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port} `);
 });

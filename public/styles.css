@@ -1,22 +1,75 @@
-/* CSS para o modal de login */
+/* Estilizando o body no tema dark */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #333; /* Cor de fundo escura */
+    color: #fff; /* Cor do texto clara */
+    margin: 0;
+    padding: 0;
+}
+
+/* Estilizando o cabeçalho (h1) */
+h1 {
+    text-align: center;
+    padding: 20px;
+}
+
+/* Estilizando o formulário no tema dark */
+form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #444; /* Cor de fundo escura */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); /* Sombra escura */
+}
+
+/* Estilizando os rótulos (labels) no tema dark */
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #fff; /* Cor do texto clara */
+}
+
+/* Estilizando os campos de entrada (inputs) no tema dark */
+input[type="text"],
+input[type="password"] {
+    width: 90%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #777; /* Cor da borda mais escura */
+    border-radius: 4px;
+    background-color: #555; /* Cor de fundo escura */
+    color: #fff; /* Cor do texto clara */
+}
+
+/* Estilizando o botão de envio no tema dark com a cor laranja */
+input[type="submit"] {
+    background-color: #FC7600; /* Cor laranja para o botão */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #FC7600; /* Cor de hover laranja mais escura */
+}
+
+/* Estilizando o diálogo de login no tema dark */
 #login-dialog {
     display: none;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: white;
+    background-color: #444; /* Cor de fundo escura */
     padding: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); /* Sombra escura */
     z-index: 999;
 }
 
-#login-dialog h2 {
-    margin-top: 0;
-}
-
-/* CSS para o fundo escurecido */
+/* Estilizando o overlay de fundo no tema dark */
 #overlay {
     display: none;
     position: fixed;
@@ -28,77 +81,45 @@
     z-index: 998;
 }
 
+/* Resto do seu CSS permanece o mesmo */
+/* Certifique-se de manter os outros estilos do seu CSS como estão */
 
+/* ... */
 
+/* Estilizando o cabeçalho no tema dark */
+header {
+    background-color: #222; /* Cor de fundo escura para o cabeçalho */
+    color: #fff; /* Cor do texto clara */
+    padding: 10px 0;
+    text-align: center;
+}
 
-
-
-/* Estilizando o body */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    margin: 0;
+/* Estilizando a navegação (a lista não ordenada) no tema dark */
+nav ul {
+    list-style: none;
     padding: 0;
 }
 
-/* Estilizando o cabeçalho (h1) */
-h1 {
-    text-align: center;
-    padding: 20px;
+/* Estilizando os itens da navegação no tema dark */
+nav li {
+    display: inline;
+    margin-right: 20px;
 }
 
-/* Estilizando o formulário */
-form {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Estilizando os rótulos (labels) */
-label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
-/* Estilizando os campos de entrada (inputs) */
-input[type="text"],
-input[type="password"] {
-    width: 90%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-/* Estilizando o botão de envio */
-input[type="submit"] {
-    background-color: #3498db;
+/* Estilizando os links no tema dark */
+nav a {
+    text-decoration: none;
     color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: color 0.3s ease;
 }
 
-input[type="submit"]:hover {
-    background-color: #2980b9;
+/* Estilizando os links ao passar o mouse sobre eles no tema dark */
+nav a:hover {
+    color: #007BFF; /* Cor de hover mais clara */
 }
 
-/* Estilizando o diálogo de login */
-#login-dialog {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 999;
-}
 
 /* Estilizando o overlay de fundo */
 #overlay {
@@ -113,42 +134,6 @@ input[type="submit"]:hover {
 }
 
 
-/* Estilizando o cabeçalho */
-header {
-    background-color: #3498db;
-    color: #fff;
-    padding: 10px 0;
-    text-align: center;
-}
-
-/* Estilizando a navegação (a lista não ordenada) */
-nav ul {
-    list-style: none;
-    padding: 0;
-}
-
-/* Estilizando os itens da navegação */
-nav li {
-    display: inline;
-    margin-right: 20px;
-}
-
-/* Estilizando os links */
-nav a {
-    text-decoration: none;
-    color: #fff;
-    font-weight: bold;
-    font-size: 16px;
-    transition: color 0.3s ease;
-}
-
-/* Estilizando os links ao passar o mouse sobre eles */
-nav a:hover {
-    color: #2980b9;
-}
-
-
-
 /* Estilo para a mensagem de resposta */
 #response-container {
     display: none; /* Inicialmente oculto */
@@ -156,8 +141,8 @@ nav a:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #fff;
-    border: 1px solid #ccc;
+    background-color: hsl(0, 0%, 0%);
+    border: 1px solid #000000;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     z-index: 9999;
@@ -167,7 +152,7 @@ nav a:hover {
 
 /* Estilo para o botão "OK" */
 #ok-button {
-    background-color: #007BFF;
+    background-color: #d35704;
     color: #fff;
     border: none;
     padding: 10px 20px;
@@ -193,7 +178,7 @@ nav a:hover {
 
 /* Estilos para a mensagem de carregamento */
 #loading-message {
-    background-color: #fff;
+    background-color: #000000;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
